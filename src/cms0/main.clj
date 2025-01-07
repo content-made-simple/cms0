@@ -3,8 +3,8 @@
             [ring.util.response :as response]))
 
 (defn ->content []
-  (-> (response/file-response "resources/public/foo.mov")
-      (response/content-type "video/quicktime")))
+  (-> (response/file-response "resources/public/2025-01-06-20-11-06.mp4")
+      (response/content-type "video/mp4")))
 
 (defn show-content []
   (-> "<html><body><video src = \"/content/1\" controls=\"true\"></video></body></html>"
