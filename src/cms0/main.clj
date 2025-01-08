@@ -7,14 +7,15 @@
       (response/content-type "video/mp4")))
 
 (defn show-content []
-  (-> "<html><body><video src = \"/content/1\" controls=\"true\"></video></body></html>"
+  (-> "<!doctype html><html><body><video src = \"/content/1\" controls=\"true\" preload=\"metadata\"></video></body></html>"
       (response/response)
       (response/content-type "text/html")))
 
 (defn list-content []
-  (-> "<html><body><ul><li><a href=\"/show-content/1\">First video</a></li></ul></body></html>"
+  (-> "<!doctype html><html><body><ul><li><a href=\"/show-content/1\">First video</a></li></ul></body></html>"
       (response/response)
       (response/content-type "text/html")))
+
 (defn handler [{:keys [uri] :as req}]
   (cond
     (= "/content/1" uri) (->content)
