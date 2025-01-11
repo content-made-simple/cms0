@@ -1,7 +1,6 @@
 (ns cms0.spec-demo
   "Using spec with orchestra to verify that things are right at runtime"
   (:require [clojure.spec.alpha :as s]
-            [clojure.string :as string]
             [hiccup2.core :as hiccup]
             [orchestra.spec.test :as st]
             [ring.adapter.jetty :as jetty]
@@ -60,26 +59,36 @@
 
 ;; Hack around the fact that specs cannot have
 ;; variable conforming values depending on context :(
+(def html-min-regex
+  #"<html><body>.*</body></html>")
+
 (s/def ::html-body
-  (s/and string? #(string/starts-with? % "<html>")))
+  (s/and string? #(re-matches html-min-regex %)))
+
+(def dev-mode? true)                                        ;; REPL / env var to flip this
+
+;; Use this to recover spec data from failing fdef functions
+(s/check-asserts dev-mode?)
 
 (defn verify-html-body
   [{:keys [body]}]
-  (s/valid? ::html-body body))
+  (s/assert ::html-body body))
 
 (s/def ::file-body
   #(instance? File %))
 
 (defn verify-http-body
   [{:keys [body]}]
-  (s/valid? ::file-body body))
+  ;; We are serving file responses exclusively at the moment
+  (s/assert ::file-body body))
 
 (s/fdef handler
-        :args (s/cat :request ::ring-request)
-        :ret ::ring-response
-        :fn #(if (-> % :args :request :uri (string/starts-with? "/content"))
-               (verify-http-body (:ret %))
-               (verify-html-body (:ret %))))
+  :args (s/cat :request ::ring-request)
+  :ret ::ring-response
+  :fn (fn input-output-check [{:keys [args ret]}]
+        (if (->> args :request :uri (re-matches #"/content/\d+"))
+          (verify-http-body ret)
+          (verify-html-body ret))))
 
 (defn start-server [port]
   (jetty/run-jetty #'handler {:port port :join? false}))
@@ -88,7 +97,8 @@
   (.stop server))
 
 ;; WILD IDEA ... Run instrumentation in production
-(st/instrument)
+(when dev-mode?
+     (st/instrument))
 
 (comment
   (require '[clojure.repl.deps :as deps])
@@ -99,4 +109,6 @@
   (swap! db conj {:content-type "video/mp4"
                   :filename "resources/public/episode-2.mp4"
                   :title "Episode 2"
-                  :id 2}),)
+                  :id 2})
+  ;; this comment avoids re-format, then EMACS can eval the last form correctly
+  )
