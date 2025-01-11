@@ -5,7 +5,8 @@
             [hiccup2.core :as hiccup]
             [orchestra.spec.test :as st]
             [ring.adapter.jetty :as jetty]
-            [ring.util.response :as response]))
+            [ring.util.response :as response])
+  (:import (java.io File)))
 
 (defn ->content [{:keys [content-type filename] :as _foo}]
   (-> (response/file-response filename)
@@ -57,18 +58,21 @@
                    ::body
                    ::headers]))
 
+;; Hack around the fact that specs cannot have
+;; variable conforming values depending on context :(
 (s/def ::html-body
   (s/and string? #(string/starts-with? % "<html>")))
 
-;; Hack around the fact that specs cannot have
-;; variable conforming values depending on context :(
 (defn verify-html-body
   [{:keys [body]}]
   (s/valid? ::html-body body))
 
+(s/def ::file-body
+  #(instance? File %))
+
 (defn verify-http-body
   [{:keys [body]}]
-  (s/valid? ::body body))
+  (s/valid? ::file-body body))
 
 (s/fdef handler
         :args (s/cat :request ::ring-request)
