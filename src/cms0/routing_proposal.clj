@@ -46,7 +46,7 @@
 (defn uri->parts [rx uri]
   (re-find rx uri))
 
-(def content-uri-regex #"/show-content/(\d+)")
+(def content-uri-regex #"/ui/(\d+)")
 (def server-uri-regex #"/content/(\d+)")
 
 (defn ui-request? [uri]
@@ -83,6 +83,25 @@
 (s/def ::ring-request
   (s/keys :req-un [::uri]))
 
+(def html-min-regex
+  #"<html><body>.*</body></html>")
+
+(s/def ::html-body
+  (s/and string? #(re-matches html-min-regex %)))
+
+(def not-found #{404})
+(s/def ::not-found-status not-found)
+(s/def ::not-found-body string?)                        ;; Can make this more specific
+
+(def ok #{200})
+(s/def ::ok-status ok)
+
+(def error #{500})
+(s/def ::error-status error)
+
+(s/def ::file-body
+  #(instance? File %))
+
 (s/def ::status pos-int?)
 (s/def ::body any?)
 (s/def ::headers map?)
@@ -91,30 +110,51 @@
                    ::body
                    ::headers]))
 
-(def html-min-regex
-  #"<html><body>.*</body></html>")
-
-(s/def ::html-body
-  (s/and string? #(re-matches html-min-regex %)))
-
-(s/def ::file-body
-  #(instance? File %))
-
-
 (def dev-mode? true)                                        ;; REPL / env var to flip this
 
 ;; Use this to recover spec data from failing fdef functions
 (s/check-asserts dev-mode?)
 
+(defn verify-html-response
+  [{:keys [status body]}]
+  (s/assert ::ok-status status)
+  (s/assert ::html-body body))
+
+(defn verify-http-response
+  [{:keys [status body]}]
+  (s/assert ::ok-status status)
+  ;; We are serving file responses exclusively at the moment
+  (s/assert ::file-body body))
+
+(defn verify-not-found
+  [{:keys [status body]}]
+  (s/assert ::not-found-status status)
+  (s/assert ::not-found-body body))
+
+(defn verify-error-body
+  [{:keys [status body]}]
+  (s/assert ::error-status status)
+  (s/assert ::body body))
 
 (s/fdef handler
   :args (s/cat :request ::ring-request)
   :ret ::ring-response
-  :fn (fn input-output-check [{:keys [args ret]}]
-        ;; Ensure we apply the correct spec
-        (if (->> args :request :uri server-request?)
-          (s/assert ::file-body (:body ret))
-          (s/assert ::html-body (:body ret)))))
+  :fn (fn input-output-check [{:keys [ret]
+                               {:keys [status]} :ret
+                               {:keys [request]} :args}]
+        (prn :ret ret)
+        ;; Ensure we apply the correct spec, not found is checked first.
+        ;; Having simple specs that are made more specific here makes this part simpler
+        ;; to reason about: s/or's make it tricky to pick apart contents of :ret & :arg
+        (cond
+          (not-found status) (verify-not-found ret)
+
+          (and (ok status)
+               (-> request :uri server-request?)) (verify-http-response ret)
+
+          (ok status) (verify-html-response ret)
+
+          :else (verify-error-body ret))))
 
 (defn start-server [port]
   (jetty/run-jetty #'handler {:port port :join? false}))
@@ -124,7 +164,7 @@
 
 ;; WILD IDEA ... Run instrumentation in production
 (when dev-mode?
-     (st/instrument))
+  (st/instrument))
 
 (comment
   (require '[clojure.repl.deps :as deps])
