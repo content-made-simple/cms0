@@ -32,6 +32,28 @@
   (-> [:html [:body [:ul (map bar foos)]]]
       (render)))
 
+(def example-id-vs-value
+  [{;; This is the "IDENTITY" ... having an incremental number is tedious so using
+    ;; a uuid would simpler
+    :id 1
+    :value
+    ;; This is the "VALUE" ... having a vector allows us to maintain a history
+    ;; - we can be smarter on the diffs (eg using a digest of the content)
+    ;; - we can keep the history in another Atom to reduce memory, though that requires looking in 2 places
+    [{:content-type "video/mp4"
+      ;; Using literal v0 ... v3 is tedious so using a SHA1 of the content would be simpler
+      :filename "resources/public/ep-1-v3.mp4"
+      :title "Episode 1"}
+     {:content-type "video/mp4"
+      :filename "resources/public/ep-1-v2.mp4"
+      :title "Episode 1"}
+     {:content-type "video/mp4"
+      :filename "resources/public/ep-1-v1.mp4"
+      :title "Episode 1"}
+     {:content-type "video/mp4"
+      :filename "resources/public/ep-1-v0.mp4"
+      :title "Episode 1"}]}])
+
 (defonce db (atom [{:content-type "video/mp4"
                     :filename "resources/public/2025-01-06-20-11-06.mp4"
                     :title "Episode 1"
@@ -91,7 +113,7 @@
 
 (def not-found #{404})
 (s/def ::not-found-status not-found)
-(s/def ::not-found-body string?)                        ;; Can make this more specific
+(s/def ::not-found-body string?)                            ;; Can make this more specific
 
 (def ok #{200})
 (s/def ::ok-status ok)
@@ -142,7 +164,6 @@
   :fn (fn input-output-check [{:keys [ret]
                                {:keys [status]} :ret
                                {:keys [request]} :args}]
-        (prn :ret ret)
         ;; Ensure we apply the correct spec, not found is checked first.
         ;; Having simple specs that are made more specific here makes this part simpler
         ;; to reason about: s/or's make it tricky to pick apart contents of :ret & :arg
