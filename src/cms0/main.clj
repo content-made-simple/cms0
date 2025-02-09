@@ -46,10 +46,16 @@
    [:input {:type "file"
             :name "file"}]
    [:br]
-   [:input {:type "text"
-            :name "title"}]
+   [:div "title" [:input {:type "text"
+                          :name "title"}]]
+
+   [:div "email" [:input {:type "text"
+                          :name "email"}]]
+
+   [:div "token" [:input {:type "text"
+                          :name "token"}]]
    [:br]
-   [:input {:type "submit" :name "Upload"}]])
+   [:input {:type "submit" :value "Upload"}]])
 
 (def signup-form
   [:form {:method "post"
@@ -68,24 +74,53 @@
                              :file-path "resources/db"
                              :init []))
 
-
 (defn next-id [db collection]
   (or (some->> db collection (map :id) seq (apply max) inc)
       0))
 
+(defn by-email [email user]
+  (= (:email user) email))
+
+(defn by-token [token user]
+  (= (:token user) token))
+
+(defn by-id [id x]
+  (= (:id x) id))
+
+(defn by-token-and-email [token email user]
+  (and (by-token token user)
+       (by-email email user)))
+
+(defn query [db collection query-fn]
+  (->> db
+       collection
+       (filter query-fn)))
+
+(defn query-one [db collection query-fn]
+  (first (query db collection query-fn)))
+
+(defn content-by-id [db id]
+  (query-one db :content (partial by-id id)))
+
+(defn transact! [db collection x]
+  (swap! db update collection conj x))
+
 (defn handle-upload [req]
-  (let [{:keys [multipart-params] :as req}
-        (multipart/multipart-params-request req {})
-        file (get multipart-params "file")
+  (let [{:keys [multipart-params] :as req} (multipart/multipart-params-request req)
+        {:strs [file email token]} multipart-params
         id (next-id @db :content)
         path (str "resources/public/content-" id)
-        destination (java.io.File. path)]
-    (io/copy (:tempfile file) destination)
-    (swap! db update :content conj
-           {:content-type (:content-type file)
-            :title (get multipart-params "title")
-            :filename path
-            :id id})))
+        destination (java.io.File. path)
+        user (query-one @db :user (partial by-token-and-email token email))]
+    (if user
+      (do (io/copy (:tempfile file) destination)
+          (transact! db :content {:content-type (:content-type file)
+                                  :title (get multipart-params "title")
+                                  :filename path
+                                  :user-id (:id user)
+                                  :id id}))
+      {::errors {:status 403
+                 :body "Unknown user"}})))
 
 (defn ->id [uri]
   (-> uri (str/split #"/") last parse-long))
@@ -113,12 +148,14 @@
         user {:id id
               :email email
               :token (->token [email timestamp])}]
-    (swap! db update :user conj user)
+    (transact! db :user user)
     user))
 
-(defn content-by-id [db id]
-  (nth (:content db) (dec id)))
+(defn handle-errors [errors]
+  errors)
 
+(defn error [{:keys [query-string] :as req}]
+  [:h1 query-string])
 (defn handler [{:keys [uri] :as req}]
   (cond
     (str/starts-with? uri "/content/") (->content (content-by-id @db  (->id uri)))
@@ -128,8 +165,11 @@
     (= "/signup-form" uri) (render (page signup-form))
     (= "/signup" uri)  (render (page (token (handle-signup req))))
 
-    #_#_(= "/upload-content" uri) (do (handle-upload req)
-                                      (response/redirect "/"))
+#_#_    (= "/upload-content" uri) (let [upload-result (handle-upload req)]
+                                (if-let [errors  (::errors upload-result)]
+                                  (response/redirect-after-post "/error?Unauthenticated")
+                                  (response/redirect-after-post "/")))
+    (= "/error" uri) (render (page (error req)))
     :else (render (page (home (:content @db))))))
 
 (defn start-server [port]
@@ -141,7 +181,7 @@
 (comment
   (require '[clojure.repl.deps :as deps])
   (deps/sync-deps)
-  
+  (:user @db)
   (def server (start-server 3000))
   (stop-server server)
   (swap! db conj {:content-type "video/mp4"
