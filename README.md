@@ -28,20 +28,44 @@ This can, in the spirit of the project, be re-prioritised later.
 
 ### General
 
-- Be determinedly minimal. 
-  - This means challenging any code or framework that does more than we explicitly need at any moment.
-- Be safe.
-  - Do enough to ensure that the data is stored safely and cannot be lost.
-- Be secure.
-  - Do enough to ensure that actions on data are secure.
-    - This will evolve as we add users and controls.
+Aiming for the MISSED or MESSED bacronym ... we're not quite there yet.
+
+- **Minimal**: reject code / framework that does more than we **explicitly** need at any moment.
+  - We appreciate that what defines **needs** is slippery: 
+    - do we need to test anything? do we need to reduce repetition?
+    - we answer these in reference to the other principles and if they are not justified through those, we reject.
+- **Safe**: ensure that the data is stored safely and cannot be lost.
+- **Secure**: ensure that actions on data are secure.
+- **Defer**: only take decisions at the [Last Responsible Moment](https://blog.codinghorror.com/the-last-responsible-moment/).
+
+### Process
+
+- Pair program
+- Commit directly to main
 
 ### Architecture
 
+- Server-side rendering
+  - HTML only, delivers an extremely basic UI on the Defer principle.
+  - This is a pragmatic decision rather than a principle since this is likely to evolve.
+
 ### Design
+
+- Data oriented.
 
 ### Coding
 
+- Functional programming.
+  - Functional core, imperative shell.
+
+### Quality control
+
+- Pair programming
+- REPL testing in production
+
+### Deployment
+
+- REPL evaluation in production
 
 ## Content
 
