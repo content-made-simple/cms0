@@ -1,1 +1,63 @@
-# cms0
+# Content Made Simple
+
+# Goal
+
+Make a system for users to post and share content: video, images, text (aka blogs or micro-blogs)
+
+# Rationale
+
+We want to create a solution that is simple for 
+- users: no algorithms or AI.
+- developers: written from scratch in Clojure.
+
+# Approach
+
+This is a slow build out project: we each spend an hour or two per week. 
+
+We code the solution on a YouTube live stream and do some admin out of band. 
+
+Thinking and researching the problems is currently out of band but that may evolve.
+
+# Principles
+
+Since this is, for the moment at least, primarily a development experiment, we will list those principles first.
+
+This can, in the spirit of the project, be re-prioritised later.
+
+## Development
+
+### General
+
+- Be determinedly minimal. 
+  - This means challenging any code or framework that does more than we explicitly need at any moment.
+- Be safe.
+  - Do enough to ensure that the data is stored safely and cannot be lost.
+- Be secure.
+  - Do enough to ensure that actions on data are secure.
+    - This will evolve as we add users and controls.
+
+### Architecture
+
+### Design
+
+### Coding
+
+
+## Content
+
+- We will serve what we are given
+  - We will not optimize content. Any optimisations are the user's responsibility.
+  - The system does not yet support for a variety of formats / sources. 
+    - This could be added so that posters can have content that is relevant for a variety of devices.
+
+## User data
+
+TBD
+
+
+# Authors
+
+[Erik Assum](https://github.com/orgs/content-made-simple/people/slipset)
+
+[Ray McDermott](https://github.com/orgs/content-made-simple/people/raymcdermott)
+
