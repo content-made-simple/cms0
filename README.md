@@ -1,5 +1,7 @@
 # Content Made Simple
 
+## [content-made-simple.org](https://content-made-simple.org/)
+
 # Goal
 
 Make a system for users to post and share content: video, images, text (aka blogs or micro-blogs)
@@ -8,19 +10,32 @@ Make a system for users to post and share content: video, images, text (aka blog
 
 We want to create a solution that is simple for 
 - users: no algorithms or AI.
-- developers: written from scratch in Clojure.
+- developers: written from scratch in Clojure. Well, hopefully simple for Clojure developers.
 
 # Approach
 
 This is a slow build out project: we each spend an hour or two per week. 
 
-We code the solution on a YouTube live stream and do some admin out of band. 
+We code the solution on a YouTube live stream and do some admin out of band.
 
-Thinking and researching the problems is currently out of band but that may evolve.
+The stream is retained on our [YouTube channel](https://www.youtube.com/@ContentMadeSimple) and we dog food the posting a recording of each stream to the main site [content-made-simple.org](https://content-made-simple.org/)
 
-# Principles - lies we tell ourselves
+Thinking and researching the problems is currently out of band to the stream but that may evolve.
 
-Since this is, for the moment at least, primarily a development experiment, we will list development ~~lies~~ principles first.
+# Process
+
+- Pair program
+- Commit directly to main
+- Review every time a namespace passes 200 lines, using that as our [Norris number](https://www.teamten.com/lawrence/writings/norris-numbers.html)
+  - Clojure, being a LISP, is much denser and expressive than C-style languages so 10:1 (where 10 lines of another language = 1 line of Clojure) seems about right.
+- Think about stuff and propose it to each other, even in code on the main branch.
+  - Only use code that we have consensus around.
+
+# Intentions: the lies we tell ourselves
+
+Some developers use the term principles instead of intentions, but we don't want to start with too many promises to you or, since there will likely be very few of you, to ourselves. 
+
+Since this is, for the moment at least, primarily a development experiment, we will list our development ~~lies~~ intentions first.
 
 This can, in the spirit of the project, be re-prioritised later.
 
@@ -33,21 +48,12 @@ Aiming for the MISSED acronym, though we're not quite there yet. Or maybe we are
 - **Minimal**: reject code / framework that does more than we **explicitly** need at any moment.
   - We appreciate that what defines **needs** is slippery: 
     - do we need to test anything? do we need to reduce repetition?
-    - we answer these in reference to the other principles and if they are not justified through those, we reject.
+    - we answer these in reference to the other intentions and if they are not justified through those, we reject.
 - **Safe**: ensure that the data is stored safely and cannot be lost.
 - **Secure**: ensure that actions on data are secure.
 - **Defer**: only take decisions at the [Last Responsible Moment](https://blog.codinghorror.com/the-last-responsible-moment/).
 
-### Process
-
-- Pair program
-- Commit directly to main
-- Review every time a namespace passes 200 lines, using that as our [Norris number](https://www.teamten.com/lawrence/writings/norris-numbers.html)
-  - Clojure, being a LISP, is much denser and expressive than C-style languages so 10:1 (where 10 lines of another language = 1 line of Clojure) seems about right.
-- Think about stuff and propose it to each other, even in code on the main branch.
-  - Only use code that we have consensus around.
-
-### Architecture
+## Architecture
 
 - Server-side rendering (defer)
   - HTML only, delivers an extremely basic UI. Evolve as needs must.
@@ -63,7 +69,36 @@ Aiming for the MISSED acronym, though we're not quite there yet. Or maybe we are
 - Clojure REPL without root (secure)
   - Accessible as a remote REPL via SSH tunnel
 
-### Hosting - Exoscale
+## Design
+
+- Data oriented.
+
+## Coding
+
+- Functional programming.
+  - Functional core, imperative shell.
+
+## Quality control
+
+- Pair programming
+- REPL testing in production
+
+## Deployment
+
+- REPL evaluation in production
+
+## Content
+
+- We will serve what we are given
+  - We will not optimize content. Any optimisations are the user's responsibility.
+  - The system does not yet support for a variety of formats / sources. 
+    - This could be added so that posters can have content that is relevant for a variety of devices.
+
+## User data
+
+TBD
+
+# Hosting - Exoscale
 Ray works at [Exoscale](https://community.exoscale.com/platform/products-and-services/) and has a free allowance per month.
 
 We use simple services that can be reproduced in other hosting environments, if and when it is needed.
@@ -80,36 +115,6 @@ These facilities are available and established though we have not yet used them.
   - for content
 
 **NOTE:** This is case where **Defer** has won over **Safe**. As it stands, we only have our own videos as content so we can risk losing everything without any serious consequences. The videos are also posted on YouTube.
-
-### Design
-
-- Data oriented.
-
-### Coding
-
-- Functional programming.
-  - Functional core, imperative shell.
-
-### Quality control
-
-- Pair programming
-- REPL testing in production
-
-### Deployment
-
-- REPL evaluation in production
-
-## Content
-
-- We will serve what we are given
-  - We will not optimize content. Any optimisations are the user's responsibility.
-  - The system does not yet support for a variety of formats / sources. 
-    - This could be added so that posters can have content that is relevant for a variety of devices.
-
-## User data
-
-TBD
-
 
 # Authors
 
