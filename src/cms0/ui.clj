@@ -8,8 +8,11 @@
 
 (def upload-form
   [:form {:method "post"
-          :action "/upload-content"
+          :action "/command"
           :enctype "multipart/form-data"}
+   [:input {:type "hidden"
+            :name "command"
+            :value "upload-content"}]
    [:input {:type "file"
             :name "file"}]
    [:br]
@@ -36,7 +39,7 @@
    [:body
     body]])
 
-(def this-is-a-beta
+(defn this-is-a-beta [_]
   [:div
    "No signups at this time, we're still in pre-alpha"])
 
@@ -51,7 +54,8 @@
 
 (def reset-token-form
   [:form {:method "post"
-          :action "/reset-token"}
+          :action "/command"}
+   [:input {:type "hidden" :name "command" :value "reset-token"}]
    [:div "email" [:input {:type "text"
                           :name "email"}]]
    [:div "token" [:input {:type "text"
@@ -64,11 +68,11 @@
    (str "Your token is " token " put it somewhere safe")])
 
 (defn reset-token-message [user]
-  (if user
-    [:div
-     (str "Your token is " (:token user) " put it somewhere safe")]
-    [:div
-     "You're cheating"]))
+  [:div
+   (str "Your token is " (:token user) " put it somewhere safe")])
 
-(defn error [{:keys [query-string] :as req}]
-  [:h1 query-string])
+(defn error [msg]
+  [:h1 msg])
+
+(defn under-construction [command]
+  [:h1 (str "Under construction" (name command))])
