@@ -6,6 +6,18 @@
            :controls true
            :preload "metadata"}])
 
+(defn make-input [{:keys [id label value]
+                   input-type :type
+                   input-name :name
+                   :or {input-type "text"}}]
+  (let [id (or id input-name)]
+    (list (when label
+            [:label {:for id} label])
+          [:input (cond-> {:type (name input-type)
+                           :id id}
+                    input-name (assoc :name input-name)
+                    value (assoc :value value))])))
+
 (def upload-form
   [:form {:method "post"
           :action "/command"
@@ -13,19 +25,22 @@
    [:input {:type "hidden"
             :name "command"
             :value "upload-content"}]
-   [:input {:type "file"
-            :name "file"}]
+   (make-input {:name "file"
+                :type :file})
    [:br]
-   [:div "title" [:input {:type "text"
-                          :name "title"}]]
-
-   [:div "email" [:input {:type "text"
-                          :name "email"}]]
-
-   [:div "token" [:input {:type "text"
-                          :name "token"}]]
+   (make-input {:name "title"
+                :label "Title"})
    [:br]
-   [:input {:type "submit" :value "Upload"}]])
+   (make-input {:name "email"
+                :type :email
+                :label "Email"})
+   [:br]
+   (make-input {:name "token"
+                :label "Token"})
+
+   [:br]
+   (make-input {:value "Upload"
+                :type :submit})])
 
 (defn video-link [{:keys [id title] :as _video}]
   [:li [:a {:href (str "/video/" id)} title]])
@@ -46,22 +61,24 @@
 (def signup-form
   [:form {:method "post"
           :action "/signup"}
-   [:div "email"
-    [:input {:type "text"
-             :name "email"}]]
+   (make-input {:name "email"
+                :title "Email"
+                :type :email})
    [:br]
-   [:input {:type "submit" :name "Signup"}]])
+   (make-input {:type :submit :value "Sign up"})])
 
 (def reset-token-form
   [:form {:method "post"
           :action "/command"}
    [:input {:type "hidden" :name "command" :value "reset-token"}]
-   [:div "email" [:input {:type "text"
-                          :name "email"}]]
-   [:div "token" [:input {:type "text"
-                          :name "token"}]]
+   (make-input {:name "email"
+                :title "Email"
+                :type :email})
    [:br]
-   [:input {:type "submit" :name "Signup"}]])
+   (make-input {:name "token"
+                :title "Token"})
+   [:br]
+   (make-input {:type :submit :value "Reset"})])
 
 (defn token-message [{:keys [token] :as _user}]
   [:div

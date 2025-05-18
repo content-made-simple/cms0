@@ -109,10 +109,9 @@
                         :page ui/this-is-a-beta}})
 
 ;; TODO
-;; - generate form from paramters
 ;; - test "/content"
 ;; - test render
-;; - test handle-signup
+;; - rewrite database to assosiative
 
 (defn evaluate-command! [{:keys [id page handler redirect] :as command} {:keys [user] :as request}]
   (cond
@@ -176,4 +175,4 @@
   (:content @db/db))
 
 
-f
+
